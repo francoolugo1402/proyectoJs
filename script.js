@@ -1,4 +1,8 @@
 
+
+let prestamos = [];
+
+
 function Prestamo(monto, cuotas, tasaInteres) {
     this.monto = monto;
     this.cuotas = cuotas;
@@ -29,6 +33,32 @@ Prestamo.prototype.mostrarResultados = function() {
 };
 
 
+Prestamo.prototype.calcularTotalPagos = function() {
+    return this.resultados.reduce((total, cuota) => total + parseFloat(cuota.montoCuota), 0).toFixed(2);
+};
+
+function agregarPrestamo(monto, cuotas, tasaInteres) {
+    let nuevoPrestamo = new Prestamo(monto, cuotas, tasaInteres);
+    nuevoPrestamo.calcularPagos();
+    prestamos.push(nuevoPrestamo);
+    alert("Préstamo agregado exitosamente.");
+}
+
+
+function mostrarResumenPrestamos() {
+    if (prestamos.length === 0) {
+        alert("No hay préstamos para mostrar.");
+        return;
+    }
+
+    let mensaje = "Resumen de todos los préstamos:\n";
+    prestamos.forEach((prestamo, index) => {
+        mensaje += `\nPréstamo ${index + 1}:\nMonto: $${prestamo.monto}\nCuotas: ${prestamo.cuotas}\nTasa de Interés: ${prestamo.tasaInteres}%\nTotal a Pagar: $${prestamo.calcularTotalPagos()}\n`;
+    });
+    alert(mensaje);
+}
+
+
 function simuladorPagos() {
     let monto = parseFloat(prompt("Ingresa el monto del préstamo:"));
     
@@ -54,11 +84,18 @@ function simuladorPagos() {
     let confirmacion = confirm(`Estás por solicitar un préstamo de $${monto} en ${cuotas} cuotas con una tasa de interés del ${tasaInteres}%. ¿Deseas continuar?`);
 
     if (confirmacion) {
-        let prestamo = new Prestamo(monto, cuotas, tasaInteres);
-        prestamo.calcularPagos();
-        prestamo.mostrarResultados();
+        agregarPrestamo(monto, cuotas, tasaInteres);
+        let mostrar = confirm("¿Deseas ver los detalles del préstamo?");
+        if (mostrar) {
+            prestamos[prestamos.length - 1].mostrarResultados();
+        }
     } else {
         alert("Operación cancelada.");
+    }
+
+    let resumen = confirm("¿Quieres ver un resumen de todos los préstamos?");
+    if (resumen) {
+        mostrarResumenPrestamos();
     }
 }
 
