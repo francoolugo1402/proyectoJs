@@ -3,11 +3,40 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simulador de Pagos</title>
-    <script src="script.js" defer></script>
+    <title>Simulador de Préstamos</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h1>Bienvenido al Simulador de Pagos</h1>
-    <button onclick="simuladorPagos()">Iniciar Simulación</button>
+    <main>
+    <div class="simulador-container">
+        <h1>Simulador de Préstamos</h1>
+        <form id="prestamoForm">
+            <label for="monto">Monto del Préstamo:</label>
+            <input type="number" id="monto" required>
+            
+            <label for="plazo">Plazo en meses:</label>
+            <input type="number" id="plazo" required>
+
+            <label for="interes">Tasa de Interés Anual (%):</label>
+            <input type="number" id="interes" required>
+
+            <button type="button" id="calcularBtn">Calcular</button>
+        </form>
+
+        <button id="historialBtn">Ver Historial de Préstamos</button>
+
+        <div id="resultado"></div>
+    </div>
+
+    <div id="modalHistorial" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>Historial de Préstamos</h2>
+            <div id="historial"></div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    </main>
 </body>
 </html>

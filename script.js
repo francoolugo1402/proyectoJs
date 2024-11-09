@@ -1,103 +1,78 @@
+document.getElementById("calcularBtn").addEventListener("click", calcularPrestamo);
+document.getElementById("historialBtn").addEventListener("click", mostrarHistorial);
+document.querySelector(".close").addEventListener("click", cerrarModal);
 
+function calcularPrestamo() {
+    const monto = parseFloat(document.getElementById("monto").value);
+    const plazo = parseInt(document.getElementById("plazo").value);
+    const interesAnual = parseFloat(document.getElementById("interes").value);
+    
+    if (isNaN(monto) || isNaN(plazo) || isNaN(interesAnual)) {
+        alert("Por favor, complete todos los campos");
+        return;
+    }
 
-let prestamos = [];
+    const interesMensual = interesAnual / 12 / 100;
+    const cuotaMensual = monto * interesMensual / (1 - Math.pow(1 + interesMensual, -plazo));
+    const totalPago = cuotaMensual * plazo;
 
+    
+    document.getElementById("resultado").innerHTML = `
+        <p>Cuota mensual: $${cuotaMensual.toFixed(2)}</p>
+        <p>Total a pagar: $${totalPago.toFixed(2)}</p>
+    `;
 
-function Prestamo(monto, cuotas, tasaInteres) {
-    this.monto = monto;
-    this.cuotas = cuotas;
-    this.tasaInteres = tasaInteres;
-    this.resultados = [];
+    
+    guardarHistorial(monto, plazo, interesAnual, cuotaMensual.toFixed(2), totalPago.toFixed(2));
 }
 
+function guardarHistorial(monto, plazo, interesAnual, cuotaMensual, totalPago) {
+    const prestamo = {
+        monto,
+        plazo,
+        interesAnual,
+        cuotaMensual,
+        totalPago,
+        fecha: new Date().toLocaleDateString()
+    };
 
-Prestamo.prototype.calcularPagos = function() {
-    let montoConInteres = this.monto * (1 + this.tasaInteres / 100);
-    let pagoMensual = montoConInteres / this.cuotas;
-    
-    for (let i = 1; i <= this.cuotas; i++) {
-        this.resultados.push({
-            cuota: i,
-            montoCuota: pagoMensual.toFixed(2)
+    let historial = JSON.parse(localStorage.getItem("historialPrestamos")) || [];
+    historial.push(prestamo);
+    localStorage.setItem("historialPrestamos", JSON.stringify(historial));
+}
+
+function mostrarHistorial() {
+    const historial = JSON.parse(localStorage.getItem("historialPrestamos")) || [];
+    const historialDiv = document.getElementById("historial");
+    historialDiv.innerHTML = "";
+
+    if (historial.length === 0) {
+        historialDiv.innerHTML = "<p>No hay préstamos registrados.</p>";
+    } else {
+        historial.forEach((prestamo, index) => {
+            historialDiv.innerHTML += `
+                <p><strong>Préstamo ${index + 1}:</strong></p>
+                <p>Monto: $${prestamo.monto}</p>
+                <p>Plazo: ${prestamo.plazo} meses</p>
+                <p>Interés Anual: ${prestamo.interesAnual}%</p>
+                <p>Cuota Mensual: $${prestamo.cuotaMensual}</p>
+                <p>Total a Pagar: $${prestamo.totalPago}</p>
+                <p>Fecha: ${prestamo.fecha}</p>
+                <hr>
+            `;
         });
     }
-};
 
+    document.getElementById("modalHistorial").style.display = "block";
+}
 
-Prestamo.prototype.mostrarResultados = function() {
-    let mensaje = `Pago en ${this.cuotas} cuotas con una tasa de ${this.tasaInteres}%\nMonto Total: ${this.monto}\n`;
-    this.resultados.forEach(resultado => {
-        mensaje += `Cuota ${resultado.cuota}: $${resultado.montoCuota}\n`;
-    });
-    alert(mensaje);
-};
-
-
-Prestamo.prototype.calcularTotalPagos = function() {
-    return this.resultados.reduce((total, cuota) => total + parseFloat(cuota.montoCuota), 0).toFixed(2);
-};
-
-function agregarPrestamo(monto, cuotas, tasaInteres) {
-    let nuevoPrestamo = new Prestamo(monto, cuotas, tasaInteres);
-    nuevoPrestamo.calcularPagos();
-    prestamos.push(nuevoPrestamo);
-    alert("Préstamo agregado exitosamente.");
+function cerrarModal() {
+    document.getElementById("modalHistorial").style.display = "none";
 }
 
 
-function mostrarResumenPrestamos() {
-    if (prestamos.length === 0) {
-        alert("No hay préstamos para mostrar.");
-        return;
+window.onclick = function(event) {
+    if (event.target == document.getElementById("modalHistorial")) {
+        cerrarModal();
     }
-
-    let mensaje = "Resumen de todos los préstamos:\n";
-    prestamos.forEach((prestamo, index) => {
-        mensaje += `\nPréstamo ${index + 1}:\nMonto: $${prestamo.monto}\nCuotas: ${prestamo.cuotas}\nTasa de Interés: ${prestamo.tasaInteres}%\nTotal a Pagar: $${prestamo.calcularTotalPagos()}\n`;
-    });
-    alert(mensaje);
-}
-
-
-function simuladorPagos() {
-    let monto = parseFloat(prompt("Ingresa el monto del préstamo:"));
-    
-    if (isNaN(monto) || monto <= 0) {
-        alert("Por favor ingresa un monto válido.");
-        return;
-    }
-
-    let cuotas = parseInt(prompt("Ingresa la cantidad de cuotas:"));
-    
-    if (isNaN(cuotas) || cuotas <= 0) {
-        alert("Por favor ingresa una cantidad válida de cuotas.");
-        return;
-    }
-
-    let tasaInteres = parseFloat(prompt("Ingresa la tasa de interés (%):"));
-    
-    if (isNaN(tasaInteres) || tasaInteres < 0) {
-        alert("Por favor ingresa una tasa de interés válida.");
-        return;
-    }
-
-    let confirmacion = confirm(`Estás por solicitar un préstamo de $${monto} en ${cuotas} cuotas con una tasa de interés del ${tasaInteres}%. ¿Deseas continuar?`);
-
-    if (confirmacion) {
-        agregarPrestamo(monto, cuotas, tasaInteres);
-        let mostrar = confirm("¿Deseas ver los detalles del préstamo?");
-        if (mostrar) {
-            prestamos[prestamos.length - 1].mostrarResultados();
-        }
-    } else {
-        alert("Operación cancelada.");
-    }
-
-    let resumen = confirm("¿Quieres ver un resumen de todos los préstamos?");
-    if (resumen) {
-        mostrarResumenPrestamos();
-    }
-}
-
-
-simuladorPagos();
+};
